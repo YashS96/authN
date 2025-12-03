@@ -11,6 +11,7 @@
   },
   "scripts": {
     "start": "bun run index.ts",
-    "dev" : "bun --watch run index.ts"
+    "dev" : "bun --hot run index.ts",
+    "dev:watch": "bun --watch run index.ts"
   }
 }
