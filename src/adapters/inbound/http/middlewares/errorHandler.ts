@@ -41,7 +41,7 @@ export function errorHandlerMiddleware(options: Partial<ErrorHandlerOptions> = {
           response.details = err.details;
         }
 
-        if (config.includeStack && !err.isOperational) {
+        if (config.includeStack) {
           response.stack = err.stack;
         }
 
