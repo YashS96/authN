@@ -1,155 +1,375 @@
-# AuthN — Centralized Authentication Service
+# AuthN Service
 
-A modular, extensible authentication service built with **Hexagonal Architecture** (Ports & Adapters). This service provides a unified interface for multiple authentication strategies, making it easy to integrate various auth mechanisms into your applications.
+A production-ready authentication service built with **Bun**, following **Hexagonal Architecture** (Ports & Adapters pattern).
 
----
+## Features
 
-## 🏗️ Low level Architecture
+- 🔐 **Email/Password Authentication** - Traditional login with Argon2id hashing
+- 🌐 **OAuth 2.0** - Google, GitHub, Apple integration
+- 🎫 **JWT Tokens** - Access & refresh tokens with proper claims
+- 📦 **Session Management** - Redis-backed sessions with TTL
+- 🏗️ **Clean Architecture** - Hexagonal/Ports & Adapters pattern
+- ⚡ **Bun Native** - Uses Bun.serve, Bun.sql, Bun.redis
 
-This project follows the **Hexagonal Design Pattern**, separating core business logic from external concerns:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      ADAPTERS (Inbound)                     │
-│            REST API • GraphQL • CLI • Message Queue         │
-├─────────────────────────────────────────────────────────────┤
-│                          PORTS                              │
-│                  (Interfaces / Contracts)                   │
-├─────────────────────────────────────────────────────────────┤
-│                      CORE DOMAIN                            │
-│         Authentication Logic • Token Management             │
-│              Session Handling • User Identity               │
-├─────────────────────────────────────────────────────────────┤
-│                          PORTS                              │
-│                  (Interfaces / Contracts)                   │
-├─────────────────────────────────────────────────────────────┤
-│                     ADAPTERS (Outbound)                     │
-│      Database • Cache • OAuth Providers • SAML IdPs         │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🔐 Supported Authentication Methods
-
-### Standard Authentication
-
-| Method | Description | Use Case |
-|--------|-------------|----------|
-| **Basic Auth** | `username:password` in HTTP headers (Base64 encoded) | Simple internal services, development |
-| **Digest Auth** | Hashed credentials with nonce, more secure than Basic | Legacy systems requiring challenge-response |
-| **Bearer Token** | Token in `Authorization` header (JWT, opaque tokens) | Modern APIs, microservices |
-| **API Keys** | Static keys for service identification | Machine-to-machine communication, rate limiting |
-
-### Federated Authentication
-
-| Method | Description | Use Case |
-|--------|-------------|----------|
-| **OAuth 1.0** | Delegated authorization with signatures | Legacy integrations (Twitter API v1) |
-| **OAuth 2.0** | Modern delegated authorization framework | Third-party app authorization |
-| **OpenID Connect** | Identity layer on top of OAuth 2.0 | User authentication + identity claims |
-| **SAML 2.0** | XML-based enterprise SSO | Enterprise SSO, B2B integrations |
-
----
-
-## 🌐 SSO Providers
-
-Integrated single sign-on support for popular identity providers:
-
-- **Google** — OAuth 2.0 / OpenID Connect
-- **Facebook** — OAuth 2.0
-- **GitHub** — OAuth 2.0
-- **Microsoft / Azure AD** — OAuth 2.0 / OpenID Connect / SAML
-- **Apple** — Sign in with Apple (OAuth 2.0)
-- **Twitter/X** — OAuth 1.0a / OAuth 2.0
-- **LinkedIn** — OAuth 2.0
-- **Okta** — SAML / OpenID Connect
-- **Auth0** — SAML / OpenID Connect
-
----
-
-## 🚀 Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) v1.3.3 or later
+- [Bun](https://bun.sh) >= 1.0
+- PostgreSQL
+- Redis
 
 ### Installation
 
 ```bash
+# Clone the repository
+git clone <repo-url>
+cd authN
+
+# Install dependencies
 bun install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start the server
+bun dev
 ```
 
-### Running the Service
-
-```bash
-bun run index.ts
-```
-
-### Development Mode
-
-```bash
-bun --watch run index.ts
-```
-
----
-
-## 📁 Project Structure
-
-```
-authN/
-├── src/
-│   ├── core/                    # Domain logic (auth strategies, tokens)
-│   │   ├── domain/              # Entities, value objects
-│   │   ├── ports/               # Inbound & outbound interfaces
-│   │   └── services/            # Application services
-│   ├── adapters/
-│   │   ├── inbound/             # HTTP controllers, GraphQL resolvers
-│   │   └── outbound/            # Database, cache, provider clients
-│   └── config/                  # Configuration management
-├── index.ts                     # Application entry point
-├── package.json
-└── tsconfig.json
-```
-
----
-
-## 🛠️ Configuration
-
-Environment variables for configuring providers and services:
+### Environment Variables
 
 ```env
 # Server
 PORT=3000
-NODE_ENV=development
-
-# JWT Configuration
-JWT_SECRET=your-secret-key
-JWT_EXPIRY=3600
-
-# OAuth Providers
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
 
 # Database
-DATABASE_URL=
+DATABASE_URL=postgres://user:password@localhost:5432/authn
 
-# Redis (Sessions/Cache)
-REDIS_URL=
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# JWT
+JWT_SECRET=your-super-secret-key-change-in-production
+JWT_ISSUER=authn-service
+JWT_AUDIENCE=authn-api
+JWT_ACCESS_TTL=900        # 15 minutes in seconds
+JWT_REFRESH_TTL=604800    # 7 days in seconds
+
+# OAuth - Google
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# OAuth - GitHub
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+```
+
+## API Reference
+
+### Base URL
+
+```
+http://localhost:3000/api
+```
+
+### Authentication Endpoints
+
+#### Register User
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePass123",
+  "roles": ["user"],
+  "permissions": ["read"],
+  "metadata": {}
+}
+```
+
+**Response (201)**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  "session": {
+    "id": "uuid",
+    "userId": "uuid",
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "accessTokenExpiresAt": "2024-01-01T00:15:00.000Z",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshTokenExpiresAt": "2024-01-08T00:00:00.000Z",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### Login (Email/Password)
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePass123"
+}
+```
+
+**Response (200)** - Same as register response
+
+---
+
+### OAuth Endpoints
+
+#### Get OAuth Authorization URL
+
+```http
+GET /api/auth/oauth/url?provider=google&redirect_uri=https://yourapp.com/callback
+```
+
+**Query Parameters**
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| provider | Yes | `google`, `github`, or `apple` |
+| redirect_uri | Yes | Your callback URL |
+
+**Response (200)**
+```json
+{
+  "url": "https://accounts.google.com/o/oauth2/v2/auth?...",
+  "state": "uuid-state-for-csrf-protection"
+}
+```
+
+#### OAuth Callback
+
+```http
+POST /api/auth/oauth/callback
+Content-Type: application/json
+
+{
+  "provider": "google",
+  "code": "authorization-code-from-provider",
+  "redirectUri": "https://yourapp.com/callback",
+  "state": "uuid-state-from-url-endpoint"
+}
+```
+
+**Response (200)** - Same as login response
+
+---
+
+### Session Management
+
+#### Logout
+
+```http
+POST /api/auth/logout
+Authorization: Bearer <access_token>
+```
+
+**Response (200)**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+#### Logout All Sessions
+
+```http
+POST /api/auth/logout-all
+Authorization: Bearer <access_token>
+```
+
+**Response (200)**
+```json
+{
+  "message": "Logged out from all sessions"
+}
+```
+
+#### Refresh Token
+
+```http
+POST /api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+**Response (200)** - Same as login response with new tokens
+
+---
+
+### Token & User Info
+
+#### Validate Token
+
+```http
+POST /api/auth/validate
+Authorization: Bearer <access_token>
+```
+
+**Response (200)**
+```json
+{
+  "valid": true,
+  "claims": {
+    "sub": "user-uuid",
+    "email": "user@example.com",
+    "sessionId": "session-uuid",
+    "roles": ["user"],
+    "permissions": ["read"],
+    "type": "access",
+    "iat": 1704067200,
+    "exp": 1704068100
+  },
+  "user": {
+    "id": "user-uuid",
+    "email": "user@example.com"
+  }
+}
+```
+
+#### Extract JWT Claims
+
+```http
+GET /api/auth/claims
+Authorization: Bearer <access_token>
+```
+
+**Response (200)**
+```json
+{
+  "userId": "user-uuid",
+  "email": "user@example.com",
+  "sessionId": "session-uuid",
+  "roles": ["user"],
+  "permissions": ["read"],
+  "metadata": {},
+  "issuedAt": "2024-01-01T00:00:00.000Z",
+  "expiresAt": "2024-01-01T00:15:00.000Z",
+  "issuer": "authn-service",
+  "audience": "authn-api",
+  "tokenId": "jti-uuid"
+}
+```
+
+#### Get Current User
+
+```http
+GET /api/auth/me
+Authorization: Bearer <access_token>
+```
+
+**Response (200)**
+```json
+{
+  "user": {
+    "id": "user-uuid",
+    "email": "user@example.com",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
 ```
 
 ---
 
-## 📜 License
+### Info Endpoints
 
-MIT
+#### List Auth Methods
+
+```http
+GET /api/auth/methods
+```
+
+**Response (200)**
+```json
+{
+  "methods": [
+    {
+      "type": "email_password",
+      "endpoint": "/api/auth/login"
+    },
+    {
+      "type": "oauth",
+      "providers": ["google", "github", "apple"],
+      "endpoints": {
+        "url": "/api/auth/oauth/url",
+        "callback": "/api/auth/oauth/callback"
+      }
+    }
+  ]
+}
+```
+
+#### Health Check
+
+```http
+GET /api/health
+```
+
+**Response (200)**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
 
 ---
 
-## 🤝 Contributing
+### Error Responses
 
-Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+All errors follow this format:
+
+```json
+{
+  "error": "Error message",
+  "code": "ERROR_CODE"
+}
+```
+
+| HTTP Status | Code | Description |
+|-------------|------|-------------|
+| 400 | VALIDATION_ERROR | Invalid input data |
+| 401 | UNAUTHORIZED | Missing or invalid token |
+| 401 | INVALID_CREDENTIALS | Wrong email/password |
+| 401 | INVALID_TOKEN | Token expired or invalid |
+| 404 | USER_NOT_FOUND | User doesn't exist |
+| 409 | USER_EXISTS | Email already registered |
+
+## Project Structure
+
+```
+authN/
+├── index.ts                    # Entry point
+├── src/
+│   ├── core/                   # Business logic (framework-agnostic)
+│   │   ├── domain/             # Entities, value objects, types
+│   │   ├── ports/              # Interfaces (inbound & outbound)
+│   │   └── services/           # Business logic implementation
+│   └── adapters/               # Framework-specific implementations
+│       ├── inbound/            # HTTP routes
+│       └── outbound/           # Database, cache, providers
+├── package.json
+└── README.md
+```
+
+See individual README files in each directory for detailed documentation.
+
+## License
+
+MIT

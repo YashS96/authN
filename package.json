@@ -4,14 +4,19 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.7"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "scripts": {
     "start": "bun run index.ts",
-    "dev" : "bun --hot run index.ts",
-    "dev:watch": "bun --watch run index.ts"
+    "dev": "bun --hot run index.ts",
+    "dev:watch": "bun --watch run index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
   }
 }
