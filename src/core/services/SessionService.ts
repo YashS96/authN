@@ -1,6 +1,6 @@
-import { Session } from "../domain/entities/Session";
-import type { ISessionUseCase } from "../ports/inbound/SessionUseCase";
-import type { ISessionRepository } from "../ports/outbound/SessionRepository";
+import type { Session } from "../domain/entities/Session";
+import type { ISessionUseCase } from "../ports/SessionUseCase";
+import type { ISessionRepository } from "../ports/SessionRepository";
 import type { TokenService } from "./TokenService";
 
 export class SessionService implements ISessionUseCase {
@@ -35,7 +35,7 @@ export class SessionService implements ISessionUseCase {
       }),
     ]);
 
-    const session = Session.fromData({
+    const session: Session = {
       id: sessionId,
       userId: params.userId,
       email: params.email,
@@ -47,7 +47,7 @@ export class SessionService implements ISessionUseCase {
       permissions: params.permissions ?? [],
       metadata: params.metadata ?? {},
       createdAt: now,
-    });
+    };
 
     await this.sessionRepository.save(session);
 
@@ -75,15 +75,15 @@ export class SessionService implements ISessionUseCase {
   }
 
   isSessionValid(session: Session): boolean {
-    return !session.isExpired();
+    return new Date() <= session.refreshTokenExpiresAt;
   }
 
   isAccessTokenValid(session: Session): boolean {
-    return !session.isAccessTokenExpired();
+    return new Date() <= session.accessTokenExpiresAt;
   }
 
   isRefreshTokenValid(session: Session): boolean {
-    return !session.isRefreshTokenExpired();
+    return new Date() <= session.refreshTokenExpiresAt;
   }
 
   async refreshSession(session: Session): Promise<Session> {

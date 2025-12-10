@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import type { ITokenUseCase } from "../ports/inbound/TokenUseCase";
+import type { ITokenUseCase } from "../ports/TokenUseCase";
 import type { JWTClaims, JWTConfig } from "../domain/types";
 
 const DEFAULT_CONFIG: JWTConfig = {

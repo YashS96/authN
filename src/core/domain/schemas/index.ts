@@ -6,47 +6,16 @@ export interface ValidationResult<T> {
   error?: string;
 }
 
-// ==================== REEXPORT VALUE OBJECT SCHEMAS ====================
+// Note: Value object schemas have been removed
+// Domain layer now contains only pure type definitions
+// Validation logic should be implemented in the service layer
 
-import { EmailSchema } from "../value-objects/Email";
-import { PasswordSchema } from "../value-objects/Password";
-import { UserIdSchema } from "../value-objects/UserId";
-import { SessionIdSchema } from "../value-objects/SessionId";
-import { TokenSchema } from "../value-objects/Token";
-import { EmailPasswordCredentialsSchema } from "../value-objects/credentials/EmailPasswordCredentials";
-import { OAuthCredentialsSchema, OAuthStateSchema, PKCESchema } from "../value-objects/credentials/OAuthCredentials";
-import { ApiKeySchema, ApiKeyCredentialsSchema } from "../value-objects/credentials/ApiKey";
+// ==================== JWT CONSTRAINTS ====================
 
-export {
-  EmailSchema,
-  PasswordSchema,
-  UserIdSchema,
-  SessionIdSchema,
-  TokenSchema,
-  EmailPasswordCredentialsSchema,
-  OAuthCredentialsSchema,
-  OAuthStateSchema,
-  PKCESchema,
-  ApiKeySchema,
-  ApiKeyCredentialsSchema,
-};
-
-// ==================== JWT SCHEMA ====================
-
-export const JWTSchema = {
-  validate(token: string): { valid: boolean; error?: string } {
-    if (typeof token !== "string") {
-      return { valid: false, error: "JWT must be a string" };
-    }
-
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      return { valid: false, error: "Invalid JWT format" };
-    }
-
-    return { valid: true };
-  },
-};
+export const JWT_CONSTRAINTS = {
+  PARTS_COUNT: 3,
+  SEPARATOR: ".",
+} as const;
 
 // ==================== REGISTER USER SCHEMA ====================
 
@@ -66,14 +35,14 @@ export const RegisterUserSchema = {
 
     const obj = input as Record<string, unknown>;
 
-    const emailResult = EmailSchema.validate(obj.email as string);
-    if (!emailResult.valid) {
-      return { valid: false, error: emailResult.error };
+    // Basic email validation
+    if (typeof obj.email !== "string" || !obj.email.includes("@")) {
+      return { valid: false, error: "Valid email is required" };
     }
 
-    const passwordResult = PasswordSchema.validate(obj.password as string);
-    if (!passwordResult.valid) {
-      return { valid: false, error: passwordResult.error };
+    // Basic password validation
+    if (typeof obj.password !== "string" || obj.password.length < 8) {
+      return { valid: false, error: "Password must be at least 8 characters" };
     }
 
     if (obj.roles !== undefined && !Array.isArray(obj.roles)) {
@@ -87,7 +56,7 @@ export const RegisterUserSchema = {
     return {
       valid: true,
       data: {
-        email: EmailSchema.normalize(obj.email as string),
+        email: obj.email.toLowerCase().trim(),
         password: obj.password as string,
         roles: obj.roles as string[] | undefined,
         permissions: obj.permissions as string[] | undefined,
@@ -112,8 +81,8 @@ export const RefreshTokenSchema = {
     const obj = input as Record<string, unknown>;
     const token = (obj.refreshToken ?? obj.refresh_token) as string;
 
-    const jwtResult = JWTSchema.validate(token);
-    if (!jwtResult.valid) {
+    // Basic JWT format validation
+    if (typeof token !== "string" || token.split(".").length !== 3) {
       return { valid: false, error: "Valid refresh token is required" };
     }
 
@@ -127,18 +96,7 @@ export const RefreshTokenSchema = {
 // ==================== UNIFIED SCHEMAS EXPORT ====================
 
 export const Schemas = {
-  Email: EmailSchema,
-  Password: PasswordSchema,
-  UserId: UserIdSchema,
-  SessionId: SessionIdSchema,
-  Token: TokenSchema,
-  JWT: JWTSchema,
-  EmailPasswordCredentials: EmailPasswordCredentialsSchema,
-  OAuthCredentials: OAuthCredentialsSchema,
-  OAuthState: OAuthStateSchema,
-  PKCE: PKCESchema,
-  ApiKey: ApiKeySchema,
-  ApiKeyCredentials: ApiKeyCredentialsSchema,
+  // DTOs (Input validation only)
   RegisterUser: RegisterUserSchema,
   RefreshToken: RefreshTokenSchema,
 } as const;

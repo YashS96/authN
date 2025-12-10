@@ -4,7 +4,7 @@ import type {
   OAuthCredentials,
   OAuthTokens,
   OAuthUserInfo,
-} from "../../domain/types";
+} from "../domain/types";
 
 /**
  * Base outbound port for authentication providers.

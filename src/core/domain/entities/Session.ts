@@ -1,22 +1,9 @@
-import { SessionId } from "../value-objects/SessionId";
-import { UserId } from "../value-objects/UserId";
-import type { SessionJSON } from "../types";
+// ==================== SESSION ENTITY ====================
 
-export interface SessionProps {
-  id: SessionId;
-  userId: UserId;
-  email: string;
-  accessToken: string;
-  refreshToken: string;
-  accessTokenExpiresAt: Date;
-  refreshTokenExpiresAt: Date;
-  roles: string[];
-  permissions: string[];
-  metadata: Record<string, unknown>;
-  createdAt: Date;
-}
-
-export interface CreateSessionData {
+/**
+ * Session entity - represents an authenticated user session
+ */
+export interface Session {
   id: string;
   userId: string;
   email: string;
@@ -30,110 +17,49 @@ export interface CreateSessionData {
   createdAt: Date;
 }
 
-export class Session {
-  private constructor(private readonly props: SessionProps) {}
+/**
+ * Input for creating a new session
+ */
+export interface SessionCreateInput {
+  id?: string;
+  userId: string;
+  email: string;
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiresAt: Date;
+  refreshTokenExpiresAt: Date;
+  roles?: string[];
+  permissions?: string[];
+  metadata?: Record<string, unknown>;
+  createdAt?: Date;
+}
 
-  static fromData(data: CreateSessionData): Session {
-    return new Session({
-      id: SessionId.create(data.id),
-      userId: UserId.create(data.userId),
-      email: data.email,
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-      accessTokenExpiresAt: data.accessTokenExpiresAt,
-      refreshTokenExpiresAt: data.refreshTokenExpiresAt,
-      roles: data.roles,
-      permissions: data.permissions,
-      metadata: data.metadata,
-      createdAt: data.createdAt,
-    });
-  }
+/**
+ * Session JSON representation (for API responses)
+ */
+export interface SessionJSON {
+  id: string;
+  userId: string;
+  accessToken: string;
+  accessTokenExpiresAt: string;
+  refreshToken: string;
+  refreshTokenExpiresAt: string;
+  createdAt: string;
+}
 
-  get id(): string {
-    return this.props.id.value;
-  }
-
-  get userId(): string {
-    return this.props.userId.value;
-  }
-
-  get email(): string {
-    return this.props.email;
-  }
-
-  get accessToken(): string {
-    return this.props.accessToken;
-  }
-
-  get refreshToken(): string {
-    return this.props.refreshToken;
-  }
-
-  get accessTokenExpiresAt(): Date {
-    return this.props.accessTokenExpiresAt;
-  }
-
-  get refreshTokenExpiresAt(): Date {
-    return this.props.refreshTokenExpiresAt;
-  }
-
-  get roles(): string[] {
-    return this.props.roles;
-  }
-
-  get permissions(): string[] {
-    return this.props.permissions;
-  }
-
-  get metadata(): Record<string, unknown> {
-    return this.props.metadata;
-  }
-
-  get createdAt(): Date {
-    return this.props.createdAt;
-  }
-
-  get expiresAt(): Date {
-    return this.props.refreshTokenExpiresAt;
-  }
-
-  isAccessTokenExpired(): boolean {
-    return new Date() > this.props.accessTokenExpiresAt;
-  }
-
-  isRefreshTokenExpired(): boolean {
-    return new Date() > this.props.refreshTokenExpiresAt;
-  }
-
-  isExpired(): boolean {
-    return this.isRefreshTokenExpired();
-  }
-
-  toJSON(): SessionJSON {
-    return {
-      id: this.id,
-      userId: this.userId,
-      accessToken: this.accessToken,
-      accessTokenExpiresAt: this.accessTokenExpiresAt.toISOString(),
-      refreshToken: this.refreshToken,
-      refreshTokenExpiresAt: this.refreshTokenExpiresAt.toISOString(),
-      createdAt: this.createdAt.toISOString(),
-    };
-  }
-
-  toStorageData() {
-    return {
-      id: this.id,
-      userId: this.userId,
-      email: this.email,
-      accessToken: this.accessToken,
-      refreshToken: this.refreshToken,
-      accessTokenExpiresAt: this.accessTokenExpiresAt.toISOString(),
-      refreshTokenExpiresAt: this.refreshTokenExpiresAt.toISOString(),
-      roles: this.roles,
-      permissions: this.permissions,
-      metadata: this.metadata,
-      createdAt: this.createdAt.toISOString(),
-    };
-  }
+/**
+ * Session storage data (for cache/database persistence)
+ */
+export interface SessionStorageData {
+  id: string;
+  userId: string;
+  email: string;
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiresAt: string;
+  refreshTokenExpiresAt: string;
+  roles: string[];
+  permissions: string[];
+  metadata: Record<string, unknown>;
+  createdAt: string;
 }

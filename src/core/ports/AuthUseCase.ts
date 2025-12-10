@@ -1,4 +1,4 @@
-import type { User } from "../../domain/entities/User";
+import type { User } from "../domain/entities/User";
 import type {
   AuthResult,
   TokenValidationResult,
@@ -7,7 +7,7 @@ import type {
   LoginDTO,
   JWTClaims,
   OAuthProvider,
-} from "../../domain/types";
+} from "../domain/types";
 
 /**
  * Inbound port for authentication use cases.

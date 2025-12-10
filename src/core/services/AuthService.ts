@@ -1,7 +1,7 @@
-import { User } from "../domain/entities/User";
-import type { IAuthUseCase } from "../ports/inbound/AuthUseCase";
-import type { IUserRepository } from "../ports/outbound/UserRepository";
-import type { IAuthProviderRegistry, IOAuthProvider } from "../ports/outbound/AuthProvider";
+import type { User } from "../domain/entities/User";
+import type { IAuthUseCase } from "../ports/AuthUseCase";
+import type { IUserRepository } from "../ports/UserRepository";
+import type { IAuthProviderRegistry, IOAuthProvider } from "../ports/AuthProvider";
 import type { SessionService } from "./SessionService";
 import type { TokenService } from "./TokenService";
 import type {
@@ -24,6 +24,7 @@ import {
   BadRequestError,
   OAuthProviderError,
 } from "../../utils/errors";
+import { createUser, userToJSON, sessionToJSON } from "./mappers";
 
 interface OAuthStateData {
   provider: string;
@@ -49,7 +50,7 @@ export class AuthService implements IAuthUseCase {
       throw new UserAlreadyExistsError(dto.email);
     }
 
-    const user = await User.register({
+    const user = await createUser({
       email: dto.email,
       plainPassword: dto.password,
     });
@@ -65,8 +66,8 @@ export class AuthService implements IAuthUseCase {
     });
 
     return {
-      user: user.toJSON(),
-      session: session.toJSON(),
+      user: userToJSON(user),
+      session: sessionToJSON(session),
     };
   }
 
@@ -177,8 +178,8 @@ export class AuthService implements IAuthUseCase {
     const newSession = await this.sessionService.refreshSession(session);
 
     return {
-      user: user.toJSON(),
-      session: newSession.toJSON(),
+      user: userToJSON(user),
+      session: sessionToJSON(newSession),
     };
   }
 
@@ -201,7 +202,7 @@ export class AuthService implements IAuthUseCase {
     return {
       valid: true,
       claims,
-      user: user?.toJSON(),
+      user: user ? userToJSON(user) : undefined,
     };
   }
 
@@ -240,7 +241,7 @@ export class AuthService implements IAuthUseCase {
       if (existingUser) {
         user = existingUser;
       } else {
-        user = await User.register({
+        user = await createUser({
           email: authenticatedUser.email,
           plainPassword: crypto.randomUUID(),
         });
@@ -264,8 +265,8 @@ export class AuthService implements IAuthUseCase {
     });
 
     return {
-      user: user.toJSON(),
-      session: session.toJSON(),
+      user: userToJSON(user),
+      session: sessionToJSON(session),
     };
   }
 

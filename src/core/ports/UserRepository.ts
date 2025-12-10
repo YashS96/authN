@@ -1,4 +1,4 @@
-import type { User } from "../../domain/entities/User";
+import type { User } from "../domain/entities/User";
 
 /**
  * Outbound port for user persistence.

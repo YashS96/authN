@@ -1,6 +1,6 @@
 import { SQL } from "bun";
-import { User } from "../../../core/domain/entities/User";
-import type { IUserRepository } from "../../../core/ports";
+import type { User } from "../../../core/domain/entities/User";
+import type { IUserRepository } from "../../../core/ports/UserRepository";
 
 export class PostgresUserRepository implements IUserRepository {
   private sql: SQL;
@@ -48,13 +48,13 @@ export class PostgresUserRepository implements IUserRepository {
     if (rows.length === 0) return null;
 
     const row = rows[0];
-    return User.create({
+    return {
       id: row.id,
       email: row.email,
       passwordHash: row.password_hash,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
-    });
+    };
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -68,13 +68,13 @@ export class PostgresUserRepository implements IUserRepository {
     if (rows.length === 0) return null;
 
     const row = rows[0];
-    return User.create({
+    return {
       id: row.id,
       email: row.email,
       passwordHash: row.password_hash,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
-    });
+    };
   }
 
   async delete(id: string): Promise<void> {

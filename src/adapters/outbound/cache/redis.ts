@@ -1,6 +1,6 @@
 import { RedisClient } from "bun";
-import { Session } from "../../../core/domain/entities/Session";
-import type { ISessionRepository } from "../../../core/ports";
+import type { Session, SessionStorageData } from "../../../core/domain/entities/Session";
+import type { ISessionRepository } from "../../../core/ports/SessionRepository";
 
 export class RedisSessionRepository implements ISessionRepository {
   private redis: RedisClient;
@@ -20,8 +20,21 @@ export class RedisSessionRepository implements ISessionRepository {
   }
 
   async save(session: Session): Promise<void> {
-    const data = JSON.stringify(session.toStorageData());
-    const ttl = Math.ceil((session.expiresAt.getTime() - Date.now()) / 1000);
+    const storageData: SessionStorageData = {
+      id: session.id,
+      userId: session.userId,
+      email: session.email,
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      accessTokenExpiresAt: session.accessTokenExpiresAt.toISOString(),
+      refreshTokenExpiresAt: session.refreshTokenExpiresAt.toISOString(),
+      roles: session.roles,
+      permissions: session.permissions,
+      metadata: session.metadata,
+      createdAt: session.createdAt.toISOString(),
+    };
+    const data = JSON.stringify(storageData);
+    const ttl = Math.ceil((session.refreshTokenExpiresAt.getTime() - Date.now()) / 1000);
 
     if (ttl <= 0) return;
 
@@ -86,7 +99,7 @@ export class RedisSessionRepository implements ISessionRepository {
 
   private parseSession(data: string): Session {
     const parsed = JSON.parse(data);
-    return Session.fromData({
+    return {
       id: parsed.id,
       userId: parsed.userId,
       email: parsed.email,
@@ -98,7 +111,7 @@ export class RedisSessionRepository implements ISessionRepository {
       permissions: parsed.permissions ?? [],
       metadata: parsed.metadata ?? {},
       createdAt: new Date(parsed.createdAt),
-    });
+    };
   }
 
   async close(): Promise<void> {

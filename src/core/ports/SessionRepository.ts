@@ -1,4 +1,4 @@
-import type { Session } from "../../domain/entities/Session";
+import type { Session } from "../domain/entities/Session";
 
 /**
  * Outbound port for session persistence.

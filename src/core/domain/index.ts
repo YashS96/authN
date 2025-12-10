@@ -1,32 +1,49 @@
-// Entities
-export { User } from "./entities/User";
-export { Session } from "./entities/Session";
+// Entities (Pure Type Definitions)
+export type { 
+  User, 
+  UserCreateInput, 
+  UserJSON,
+  UserStorageData
+} from "./entities/User";
 
-// Value Objects
-export { Email, EmailSchema, type IEmail } from "./value-objects/Email";
-export { Password, PasswordSchema, type IPassword } from "./value-objects/Password";
-export { UserId, UserIdSchema, type IUserId } from "./value-objects/UserId";
-export { SessionId, SessionIdSchema, type ISessionId } from "./value-objects/SessionId";
-export { Token, TokenSchema, type IToken } from "./value-objects/Token";
+export type { 
+  Session, 
+  SessionCreateInput, 
+  SessionJSON,
+  SessionStorageData 
+} from "./entities/Session";
 
-// Credential Schemas
-export {
-  EmailPasswordCredentialsSchema,
-  type IEmailPasswordCredentials,
-} from "./value-objects/credentials/EmailPasswordCredentials";
-export {
-  OAuthCredentialsSchema,
-  OAuthStateSchema,
-  PKCESchema,
-  type IOAuthCredentials,
-  type IOAuthState,
+// Value Objects (Pure Types)
+export type { Email } from "./value-objects/Email";
+export { EMAIL_CONSTRAINTS } from "./value-objects/Email";
+
+export type { Password, PasswordRequirements } from "./value-objects/Password";
+export { DEFAULT_PASSWORD_REQUIREMENTS, PASSWORD_HASH_CONFIG } from "./value-objects/Password";
+
+export type { UserId } from "./value-objects/UserId";
+export { UUID_REGEX } from "./value-objects/UserId";
+
+export type { SessionId } from "./value-objects/SessionId";
+export { SESSION_UUID_REGEX } from "./value-objects/SessionId";
+
+export type { Token } from "./value-objects/Token";
+export { TOKEN_CONSTRAINTS } from "./value-objects/Token";
+
+// Credentials (Pure Types)
+export type { EmailPasswordCredentials } from "./value-objects/credentials/EmailPasswordCredentials";
+
+export type { 
+  OAuthCredentials, 
+  OAuthState, 
+  PKCEPair 
 } from "./value-objects/credentials/OAuthCredentials";
-export {
-  ApiKeySchema,
-  ApiKeyCredentialsSchema,
-  type IApiKey,
-  type IApiKeyCredentials,
+export { OAUTH_CONSTRAINTS } from "./value-objects/credentials/OAuthCredentials";
+
+export type { 
+  ApiKey, 
+  ApiKeyCredentials 
 } from "./value-objects/credentials/ApiKey";
+export { API_KEY_CONSTRAINTS } from "./value-objects/credentials/ApiKey";
 
 // Types
 export * from "./types";

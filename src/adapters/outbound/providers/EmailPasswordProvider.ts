@@ -6,6 +6,7 @@ import type {
   EmailPasswordCredentials,
   AuthenticatedUser,
 } from "../../../core/domain/types";
+import { verifyUserPassword } from "../../../core/services/mappers";
 
 export class EmailPasswordAuthProvider implements IEmailPasswordProvider {
   readonly method = "email_password" as const;
@@ -19,7 +20,7 @@ export class EmailPasswordAuthProvider implements IEmailPasswordProvider {
       throw new Error("Invalid email or password");
     }
 
-    const isValid = await user.verifyPassword(credentials.password);
+    const isValid = await verifyUserPassword(user, credentials.password);
 
     if (!isValid) {
       throw new Error("Invalid email or password");

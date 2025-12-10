@@ -1,4 +1,4 @@
-import type { Session } from "../../domain/entities/Session";
+import type { Session } from "../domain/entities/Session";
 
 /**
  * Inbound port for session management use cases.

@@ -1,6 +1,11 @@
-// Inbound ports (use cases)
-export * from "./inbound";
-
-// Outbound ports (driven adapters)
-export * from "./outbound";
-
+export type { IUserRepository } from "./UserRepository";
+export type { ISessionRepository } from "./SessionRepository";
+export type {
+  IAuthProvider,
+  IEmailPasswordProvider,
+  IOAuthProvider,
+  IApiKeyProvider,
+  IAuthProviderRegistry,
+} from "./AuthProvider;
+export type { ITokenStore } from "./TokenStore";
+export type { IEmailService } from "./EmailService";

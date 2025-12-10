@@ -1,4 +1,4 @@
-import type { JWTClaims, JWTConfig } from "../../domain/types";
+import type { JWTClaims, JWTConfig } from "../domain/types";
 
 /**
  * Inbound port for token operations.
